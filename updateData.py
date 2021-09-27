@@ -72,19 +72,66 @@ fipscodes = {
 "Williamsburg": "45089",
 "York": "45091"
 }
+pop = {'45001': 24295,
+ '45003': 168808,
+ '45005': 8039,
+ '45007': 203718,
+ '45009': 13311,
+ '45011': 20589,
+ '45013': 187117,
+ '45015': 229861,
+ '45017': 14119,
+ '45019': 408235,
+ '45021': 56216,
+ '45023': 32294,
+ '45025': 43273,
+ '45027': 31144,
+ '45029': 38604,
+ '45031': 62905,
+ '45033': 28292,
+ '45035': 161540,
+ '45037': 25657,
+ '45039': 20948,
+ '45041': 137059,
+ '45043': 63404,
+ '45045': 525534,
+ '45047': 69351,
+ '45049': 18561,
+ '45051': 351029,
+ '45053': 28791,
+ '45055': 65403,
+ '45057': 96016,
+ '45059': 67539,
+ '45061': 16531,
+ '45063': 289886,
+ '45065': 9526,
+ '45067': 29183,
+ '45069': 26667,
+ '45071': 37719,
+ '45073': 78607,
+ '45075': 84223,
+ '45077': 131404,
+ '45079': 416147,
+ '45081': 22967,
+ '45083': 327997,
+ '45085': 105556,
+ '45087': 27244,
+ '45089': 31026,
+ '45091': 282090}
 
 for i in datadict:
         newdatadict[i]=[]
         for j in datadict[i]['features']:
             newdatadict[i].append(j['attributes'])
 dfs={}
-for i in counties:  #iterates through all the collected data and makes the cumulative data noncumulative
+for i in counties:
     df= pd.DataFrame(newdatadict[i])
     df.Date = pd.to_datetime(df.Date,unit='ms').dt.date
     df["Confirmed"] = df.supressed_cumulative_positive.fillna(0).diff()
     df["Probable"] = df.supressed_cumulative_probable.fillna(0).diff()
     df["FIPS"]=fipscodes[i]
-    dfs[i]=df[["Date","County","Confirmed","Probable","FIPS",'Longitud','Latitude']].dropna()
+    df["pop2020"]=pop[fipscodes[i]]
+    dfs[i]=df[["Date","County","Confirmed","Probable","FIPS","pop2020",'Longitud','Latitude']].dropna()
 
 df=pd.concat(dfs.values(),ignore_index=True)
 df["Confirmed"]=df["Confirmed"].astype(int)
@@ -94,13 +141,12 @@ df["Probable"]=df["Probable"].astype(int)
 #df[["Date","County","FIPS","Confirmed","Probable"]]
 
 
-df=df[(~df.Confirmed<0)|(~df.Probable<0)] #sometimes DHEC uses a placeholder value that is negative, we don't want those
 
-#Uncomment these lines and add a filepath to save to
-
-#olddf = pd.read_csv("INSERT FILEPATH HERE")
-
-#if not df.equals(olddf):
-#    df.to_csv("INSERTFILEPATH",index=False)
-#    print(df)
-#    print(olddf)
+## put your filepath on the commentted lines
+df=df[(~df.Confirmed<0)|(~df.Probable<0)]
+#olddf = pd.read_csv("FILEPATH HERE")
+print(df.equals(olddf))
+if not len(df) == len(olddf):  #this just checks to see if the data is the same as the last time the script ran
+#    df.to_csv("FILEPATH HERE",index=False)
+    print(df)
+    print(olddf)
